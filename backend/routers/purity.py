@@ -2,6 +2,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
+import os
 
 router = APIRouter(prefix="/api/purity", tags=["purity-testing"])
 
@@ -9,6 +10,10 @@ router = APIRouter(prefix="/api/purity", tags=["purity-testing"])
 class StartPurityRequest(BaseModel):
     camera1_index: Optional[int] = None
     camera2_index: Optional[int] = None
+
+class AnalyzeRequest(BaseModel):
+    frame1: Optional[str] = None
+    frame2: Optional[str] = None
 
 # Dependency injection
 purity_service = None
@@ -23,7 +28,19 @@ async def purity_status():
     return {
         "available": purity_service.is_available(),
         "service": "PurityTestingService",
-        "available_cameras": purity_service.get_available_cameras()
+        "available_cameras": purity_service.get_available_cameras(),
+        "models_loaded": {
+            "model1": purity_service.model1 is not None,
+            "model2": purity_service.model2 is not None
+        },
+        "model_paths": {
+            "model1": purity_service.model1_path,
+            "model2": purity_service.model2_path
+        },
+        "models_exist": {
+            "model1": os.path.exists(purity_service.model1_path),
+            "model2": os.path.exists(purity_service.model2_path)
+        }
     }
 
 @router.get("/cameras/list")
@@ -114,7 +131,7 @@ async def purity_create_sample():
     return purity_service.create_sample_csv_files()
 
 @router.post("/analyze_frame")
-async def analyze_frame(payload: dict):
+def analyze_frame(payload: dict):
     """Analyze a single frame with YOLO (for testing)"""
     import base64
     import cv2
@@ -141,3 +158,24 @@ async def analyze_frame(payload: dict):
         "annotated_frame": annotated_url,
         "detection_status": purity_service.get_detection_status()
     }
+
+@router.post("/analyze")
+def analyze_dual_frames(request: AnalyzeRequest):
+    """Analyze dual frames sent from frontend"""
+    try:
+        results = purity_service.analyze_frames(
+            frame1_b64=request.frame1,
+            frame2_b64=request.frame2
+        )
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/reload_models")
+async def reload_models():
+    """Force reload YOLO models"""
+    try:
+        result = purity_service.reload_models()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

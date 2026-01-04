@@ -10,27 +10,51 @@ load_dotenv()
 
 class Database:
     def __init__(self):
-        """Initialize PostgreSQL database connection"""
-        # Check if DATABASE_URL is provided
-        database_url = os.getenv('postgresql://postgres:admin@localhost:5432/gold_loan_appraisal')
+        """Initialize Database connection (Supabase/PostgreSQL)"""
+        # Load environment variables explicitly
+        load_dotenv(override=True)
         
-        if database_url:
-            # Use connection URL
-            self.connection_string = database_url.replace('postgresql+psycopg2://', 'postgresql://')
-            self.connection_params = None
-            # Parse URL for individual parameters (needed for database creation)
-            self._parse_database_url(database_url)
-        else:
-            # Use individual parameters
+        # Priority: Individual variables (easier to manage) -> DATABASE_URL
+        host = os.getenv('DB_HOST', '').strip()
+        database_url = os.getenv('DATABASE_URL', '').strip()
+        
+        print(f"\n--- Database Initialization Debug ---")
+        
+        if host:
+            # Using individual parameters
             self.connection_string = None
             self.connection_params = {
-                'host': os.getenv('POSTGRES_HOST', 'localhost'),
-                'port': os.getenv('POSTGRES_PORT', '5432'),
-                'database': os.getenv('POSTGRES_DB', 'gold_loan_appraisal'),
-                'user': os.getenv('POSTGRES_USER', 'face_user'),
-                'password': os.getenv('POSTGRES_PASSWORD', 'admin'),
+                'host': host,
+                'port': os.getenv('DB_PORT', '5432').strip(),
+                'database': os.getenv('DB_NAME', 'postgres').strip(),
+                'user': os.getenv('DB_USER', 'postgres').strip(),
+                'password': os.getenv('DB_PASSWORD', '').strip(),
             }
-        
+            # Add SSL requirement for Supabase
+            if "supabase" in host.lower():
+                self.connection_params['sslmode'] = 'require'
+                
+            print(f"STATUS: Using individual parameters")
+            print(f"DEBUG: Host={self.connection_params['host']}, User={self.connection_params['user']}")
+        elif database_url:
+            # Falling back to connection string
+            self.connection_string = database_url.replace('postgresql+psycopg2://', 'postgresql://')
+            if "supabase" in self.connection_string.lower() and "sslmode" not in self.connection_string:
+                sep = "&" if "?" in self.connection_string else "?"
+                self.connection_string += f"{sep}sslmode=require"
+            
+            import re
+            masked = re.sub(r':([^@]+)@', ':****@', self.connection_string)
+            print(f"STATUS: Using DATABASE_URL connection string")
+            print(f"DEBUG: {masked}")
+            self.connection_params = None
+        else:
+            # Default to local
+            print("STATUS: No environment variables found, using local default")
+            self.connection_string = "postgresql://postgres:admin@localhost:5432/gold_loan_appraisal"
+            self.connection_params = None
+
+        print(f"--------------------------------------\n")
         self.init_database()
     
     def _parse_database_url(self, url):
@@ -53,12 +77,31 @@ class Database:
             raise ValueError(f"Invalid DATABASE_URL format: {url}")
     
     def get_connection(self):
-        """Get database connection"""
-        if self.connection_string:
-            conn = psycopg2.connect(self.connection_string)
-        else:
-            conn = psycopg2.connect(**self.connection_params)
-        return conn
+        """Get database connection with SSL support and helpful error handling"""
+        try:
+            if self.connection_params:
+                # psycopg2 handles special characters in password automatically when passed via dict
+                return psycopg2.connect(**self.connection_params)
+            elif self.connection_string:
+                return psycopg2.connect(self.connection_string)
+            else:
+                raise ValueError("No connection parameters or string available")
+        except psycopg2.OperationalError as e:
+            error_msg = str(e)
+            print(f"\n❌ Database Connection Error: {error_msg}")
+            
+            if "host name" in error_msg.lower() or "not known" in error_msg.lower():
+                print("\n💡 POSSIBLE SOLUTIONS:")
+                print("1. Your computer cannot find the Supabase server. Check your internet connection.")
+                print("2. Ensure your Supabase project is NOT PAUSED. Go to Supabase Dashboard and Resume if needed.")
+                print("3. Try using the 'Transaction Pooler' connection string from Supabase (port 6543) instead of direct connection.")
+                current_host = self.connection_params.get('host') if self.connection_params else "Supabase"
+                print(f"4. Double check your host: {current_host}")
+            
+            raise e
+        except Exception as e:
+            print(f"❌ Unexpected connection failed: {e}")
+            raise e
     
     def init_database(self):
         """Initialize database tables"""

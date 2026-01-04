@@ -42,21 +42,14 @@ app = FastAPI(
 # CORS Middleware
 # ============================================================================
 
+# Allow all origins for production deployment (Netlify + local dev)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:8080",
-        "http://localhost:8081",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:8080",
-        "http://127.0.0.1:8081"
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins (Netlify, localhost, etc.)
+    allow_credentials=False,  # Must be False when using allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
-    max_age=3600,
 )
 
 # ============================================================================
