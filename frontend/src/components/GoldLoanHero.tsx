@@ -1,93 +1,94 @@
-"use client";
 
 import { motion } from "framer-motion";
-import React from "react";
-import { AuroraBackground } from "@/components/ui/aurora-background";
 import { Button } from "@/components/ui/button";
-import { Gem, Shield, TrendingUp } from "lucide-react";
+import { Gem, Shield, TrendingUp, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export function GoldLoanHero() {
   const navigate = useNavigate();
 
   return (
-    <AuroraBackground>
+    <div className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden py-20">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(212,175,55,0.03)_0%,_transparent_70%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] pointer-events-none mix-blend-overlay" />
+
       <motion.div
-        initial={{ opacity: 0.0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{
-          delay: 0.3,
-          duration: 0.8,
-          ease: "easeInOut",
-        }}
-        className="relative flex flex-col gap-6 items-center justify-center px-4 max-w-4xl"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 flex flex-col items-center max-w-5xl mx-auto px-6 text-center"
       >
-        {/* Logo/Icon */}
+        {/* Top Label */}
         <motion.div
-          initial={{ scale: 0 }}
-          whileInView={{ scale: 1 }}
-          transition={{
-            delay: 0.5,
-            duration: 0.6,
-            ease: "easeInOut",
-          }}
-          className="mb-4"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
+          className="mb-8"
         >
-          <Gem className="w-20 h-20 text-yellow-500 dark:text-yellow-400" />
+          <span className="inline-block py-1 px-3 border border-[#D4AF37]/30 rounded-full text-[#D4AF37] text-xs uppercase tracking-[0.2em] font-medium bg-[#D4AF37]/5 backdrop-blur-sm">
+            Gold Guardian Pro
+          </span>
         </motion.div>
 
         {/* Main Heading */}
-        <div className="text-4xl md:text-7xl font-bold dark:text-white text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-900 to-neutral-600 dark:from-neutral-50 dark:to-neutral-400">
-          Gold Loan Appraisal
-        </div>
+        <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl font-medium tracking-tight text-[#DEE7EA] mb-8 leading-[0.9] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70">
+          Precision <br />
+          <span className="italic font-light text-[#D4AF37]">Valuation</span>
+        </h1>
 
-        {/* Subheading */}
-        <div className="font-light text-lg md:text-2xl dark:text-neutral-200 text-neutral-700 py-4 text-center max-w-2xl">
-          Professional gold jewelry appraisal system with AI-powered valuation
-          and comprehensive record management.
-        </div>
-
-        {/* Feature Pills */}
-        <div className="flex flex-wrap gap-4 items-center justify-center mb-4">
-          <div className="flex items-center gap-2 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm px-4 py-2 rounded-full border border-neutral-200 dark:border-neutral-700">
-            <Shield className="w-4 h-4 text-blue-500" />
-            <span className="text-sm font-medium dark:text-neutral-200 text-neutral-700">
-              Secure & Reliable
-            </span>
-          </div>
-          <div className="flex items-center gap-2 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm px-4 py-2 rounded-full border border-neutral-200 dark:border-neutral-700">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-sm font-medium dark:text-neutral-200 text-neutral-700">
-              Real-time Valuation
-            </span>
-          </div>
-          <div className="flex items-center gap-2 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm px-4 py-2 rounded-full border border-neutral-200 dark:border-neutral-700">
-            <Gem className="w-4 h-4 text-yellow-500" />
-            <span className="text-sm font-medium dark:text-neutral-200 text-neutral-700">
-              Expert Analysis
-            </span>
-          </div>
-        </div>
+        {/* Description */}
+        <p className="font-sans text-lg md:text-xl text-[#8F9BA9] max-w-2xl mb-12 font-light leading-relaxed tracking-wide">
+          Experience the pinnacle of gold appraisal technology.
+          AI-powered precision meets banking-grade security for the modern era.
+        </p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-4">
+        <div className="flex flex-col sm:flex-row gap-6 mb-24">
           <Button
             size="lg"
+            variant="premium"
             onClick={() => navigate("/new-appraisal")}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all"
+            className="group"
           >
             Start New Appraisal
+            <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
           </Button>
           <Button
             size="lg"
             variant="outline"
             onClick={() => navigate("/dashboard")}
-            className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm border-2 border-neutral-300 dark:border-neutral-600 hover:bg-white dark:hover:bg-zinc-800 px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all"
+            className="text-[#DEE7EA] border-[#8F9BA9]/30 hover:bg-[#8F9BA9]/10 hover:border-[#8F9BA9]/50"
           >
             View Dashboard
           </Button>
         </div>
+
+        {/* Features - Minimalist */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl border-t border-white/5 pt-12">
+          <div className="flex flex-col items-center gap-3 p-4">
+            <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
+              <Shield className="w-5 h-5 text-[#D4AF37]" />
+            </div>
+            <h3 className="text-[#DEE7EA] font-heading text-lg">Secure & Private</h3>
+            <p className="text-[#8F9BA9] text-sm text-center font-light">Bank-grade encryption for all your appraisal data.</p>
+          </div>
+          <div className="flex flex-col items-center gap-3 p-4">
+            <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
+              <TrendingUp className="w-5 h-5 text-[#D4AF37]" />
+            </div>
+            <h3 className="text-[#DEE7EA] font-heading text-lg">Real-time Rates</h3>
+            <p className="text-[#8F9BA9] text-sm text-center font-light">Live market integration for accurate valuations.</p>
+          </div>
+          <div className="flex flex-col items-center gap-3 p-4">
+            <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
+              <Gem className="w-5 h-5 text-[#D4AF37]" />
+            </div>
+            <h3 className="text-[#DEE7EA] font-heading text-lg">AI Analysis</h3>
+            <p className="text-[#8F9BA9] text-sm text-center font-light">Computer vision for purity verification.</p>
+          </div>
+        </div>
       </motion.div>
-    </AuroraBackground>
+    </div>
   );
 }

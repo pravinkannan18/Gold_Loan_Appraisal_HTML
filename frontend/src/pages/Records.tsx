@@ -45,26 +45,26 @@ const Records = () => {
     try {
       // First try to get from localStorage
       const localAppraisals = [];
-      
+
       // Check for completed appraisals in localStorage
       const appraiserData = localStorage.getItem('currentAppraiser');
       const jewelleryItems = localStorage.getItem('jewelleryItems');
       const purityResults = localStorage.getItem('purityResults');
       const rbiCompliance = localStorage.getItem('rbiCompliance');
-      
+
       // Check for stored appraisal records
       const storedRecords = localStorage.getItem('appraisalRecords');
       if (storedRecords) {
         const records = JSON.parse(storedRecords);
         localAppraisals.push(...records);
       }
-      
+
       // If we have current session data, create a record from it
       if (appraiserData && jewelleryItems && purityResults) {
         const appraiser = JSON.parse(appraiserData);
         const items = JSON.parse(jewelleryItems);
         const purity = JSON.parse(purityResults);
-        
+
         const sessionRecord = {
           id: Date.now(),
           appraiser_name: appraiser.name || 'Unknown',
@@ -77,19 +77,19 @@ const Records = () => {
           purity_results: purity,
           rbi_compliance: rbiCompliance ? JSON.parse(rbiCompliance) : null
         };
-        
+
         // Check if this session record already exists
-        const existingRecord = localAppraisals.find(record => 
-          record.appraiser_name === sessionRecord.appraiser_name && 
+        const existingRecord = localAppraisals.find(record =>
+          record.appraiser_name === sessionRecord.appraiser_name &&
           record.total_items === sessionRecord.total_items &&
           Math.abs(new Date(record.created_at).getTime() - new Date(sessionRecord.created_at).getTime()) < 60000 // within 1 minute
         );
-        
+
         if (!existingRecord) {
           localAppraisals.unshift(sessionRecord); // Add to beginning
         }
       }
-      
+
       // Try API call as fallback
       try {
         const response = await apiService.getAllAppraisals();
@@ -104,9 +104,9 @@ const Records = () => {
       } catch (apiError) {
         console.log('API not available, using local data only');
       }
-      
+
       setAppraisals(localAppraisals);
-      
+
       if (localAppraisals.length === 0) {
         toast({
           title: "No Records",
@@ -128,7 +128,7 @@ const Records = () => {
   const viewAppraisal = async (appraisal: Appraisal) => {
     setSelectedAppraisal(appraisal);
     setIsDialogOpen(true);
-    
+
     // If this record has local data, use it
     if (appraisal.jewellery_items) {
       setJewelleryItems(appraisal.jewellery_items);
@@ -143,61 +143,66 @@ const Records = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/10 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-[#8F9BA9] hover:text-[#DEE7EA] hover:bg-white/5">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-primary">Appraisal Records</h1>
-            <p className="text-sm text-muted-foreground">View all appraisal history</p>
+            <h1 className="text-2xl font-heading font-medium text-[#DEE7EA] tracking-tight">Appraisal Records</h1>
+            <p className="text-sm text-[#8F9BA9] font-light">History & Verification</p>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <Card>
+      <main className="container mx-auto px-4 py-24">
+        <Card className="border-white/5 bg-black/20 backdrop-blur-xl">
           <CardHeader>
-            <CardTitle>All Appraisals</CardTitle>
+            <CardTitle className="text-[#DEE7EA] font-heading font-light tracking-wide">Recent Appraisals</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-[#D4AF37]" />
               </div>
             ) : appraisals.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No appraisal records found
+              <div className="text-center py-12 text-[#8F9BA9] font-light">
+                No appraisal records found.
               </div>
             ) : (
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Appraiser</TableHead>
-                    <TableHead>Items</TableHead>
-                    <TableHead>Method</TableHead>
-                    <TableHead>Results</TableHead>
-                    <TableHead>Action</TableHead>
+                <TableHeader className="hover:bg-transparent">
+                  <TableRow className="border-white/5 hover:bg-transparent">
+                    <TableHead className="text-[#D4AF37] font-medium tracking-wider uppercase text-xs">Date</TableHead>
+                    <TableHead className="text-[#D4AF37] font-medium tracking-wider uppercase text-xs">Appraiser</TableHead>
+                    <TableHead className="text-[#D4AF37] font-medium tracking-wider uppercase text-xs">Items</TableHead>
+                    <TableHead className="text-[#D4AF37] font-medium tracking-wider uppercase text-xs">Status</TableHead>
+                    <TableHead className="text-[#D4AF37] font-medium tracking-wider uppercase text-xs">Purity</TableHead>
+                    <TableHead className="text-[#D4AF37] font-medium tracking-wider uppercase text-xs text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {appraisals.map((appraisal) => (
-                    <TableRow key={appraisal.id}>
-                      <TableCell>
+                    <TableRow key={appraisal.id} className="border-white/5 hover:bg-white/5 transition-colors">
+                      <TableCell className="text-[#DEE7EA] font-light">
                         {new Date(appraisal.created_at).toLocaleDateString()}
                       </TableCell>
-                      <TableCell>{appraisal.appraiser_name}</TableCell>
-                      <TableCell>{appraisal.total_items}</TableCell>
-                      <TableCell>-</TableCell>
-                      <TableCell className="max-w-xs truncate">
+                      <TableCell className="text-[#DEE7EA] font-light">{appraisal.appraiser_name}</TableCell>
+                      <TableCell className="text-[#DEE7EA] font-light">{appraisal.total_items}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20">
+                          {appraisal.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate text-[#8F9BA9] font-light">
                         {appraisal.purity || "N/A"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-right">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           onClick={() => viewAppraisal(appraisal)}
+                          className="text-[#DEE7EA] hover:text-[#D4AF37] hover:bg-white/5"
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           View
@@ -218,7 +223,7 @@ const Records = () => {
           <DialogHeader>
             <DialogTitle>Appraisal Details</DialogTitle>
           </DialogHeader>
-          
+
           {selectedAppraisal && (
             <div className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
@@ -245,8 +250,8 @@ const Records = () => {
                     <div key={item.id} className="border rounded-lg p-4">
                       <p className="text-sm font-medium mb-2">Item {item.item_number}</p>
                       {item.image_url && (
-                        <img 
-                          src={item.image_url} 
+                        <img
+                          src={item.image_url}
                           alt={`Item ${item.item_number}`}
                           className="w-full rounded-lg border"
                         />

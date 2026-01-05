@@ -1,14 +1,31 @@
-import { AuroraLayout } from "@/components/layouts/AuroraLayout";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ModernLayout } from "@/components/layouts/ModernLayout";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 const NewAppraisal = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to the first step of the workflow
+    const timer = setTimeout(() => {
+      navigate("/appraiser-details");
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
-    <AuroraLayout>
-      <div className="min-h-screen py-8 px-4 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_45%),_radial-gradient(circle_at_bottom,_rgba(14,165,233,0.18),_transparent_55%)]">
-        <div className="max-w-4xl mx-auto">
-          {/* Page content removed */}
-        </div>
+    <ModernLayout title="New Appraisal" subtitle="Initializing">
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="w-full max-w-md shadow-lg border-slate-200">
+          <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+            <p className="text-slate-600 font-medium">Starting secure appraisal session...</p>
+          </CardContent>
+        </Card>
       </div>
-    </AuroraLayout>
+    </ModernLayout>
   );
 };
 
